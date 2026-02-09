@@ -44,6 +44,33 @@
 	- DB 연결 및 쿼리 실행 시 UI 스레드가 멈추지 않도록 비동기(async/await) 방식을 적용해야 한다.
 
 
+### 폴더 구조
+```root/
+├── ExamSocket/
+│   ├── Models/
+│   │   ├── ChatMessage.cs: 채팅 메시지
+│   │   └── MessageProtocol.cs: 신뢰성 있는 UDP 통신을 위한 ACK 확인용 클래스
+│   ├── Services/
+│   │   ├── AuthService.cs: IAuthService 인터페이스를 구현하는 회원가입 및 로그인을 위한 클래스
+│   │   ├── IAuthService.cs
+│   │   ├── ICommunicationService.cs: 통신 서비스를 만들기 위한 인터페이스.
+│   │   ├── MessageRepository.cs: App.config에서 DB 연결 설정 ConnectionString을 조회하고 채팅 DB 저장 및 조회
+│   │   ├── PasswordHasher.cs: 비밀번호를 받아서 salt와 함께 해싱, Verify기능이 구현된 클래스
+│   │   ├── TcpCommunicationService.cs: ICommunicationService 인터페이스를 구현하는 TCP 통신 전담 클래스
+│   │   └── UdpCommunicationService.cs: ICommunicationService 인터페이스를 구현하는 UDP 통신 전담 클래스
+│   ├── ViewModels/
+│   │   ├── ChatViewModel.cs: 채팅 ViewModel
+│   │   ├── LoginViewModel.cs: 로그인 ViewModel
+│   │   └── SignupViewModel.cs: 회원가입 ViewModel
+│   ├── Views/
+│   │   ├── LoginWindow.xaml: 로그인 View
+│   │   ├── MainWindow.xaml: 채팅 View
+│   │   └── SignupWindow.xaml: 회원가입 View
+│   └── App.xaml
+└── MyExam.slnx : 솔루션 파일
+```
+
+
 ### 화면
 - 로그인
 <img width="346" height="419" alt="image" src="https://github.com/user-attachments/assets/e115ead1-1f7f-4ac8-b7ae-90259d08a2c8" />
