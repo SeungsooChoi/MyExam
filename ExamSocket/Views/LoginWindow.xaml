@@ -1,0 +1,68 @@
+﻿<Window x:Class="ExamSocket.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ExamSocket.Views"
+        mc:Ignorable="d"
+        Title="로그인" SizeToContent="Height" Width="360">
+
+    <Border Background="White" CornerRadius="15" Margin="20" Padding="20">
+        <Border.Effect>
+            <DropShadowEffect Color="#DDDDDD" BlurRadius="20" ShadowDepth="5" Opacity="0.5"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <TextBlock Grid.Row="0" Text="로그인" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#333"/>
+            
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="아이디" Foreground="#666" Margin="2,0,0,5"/>
+                <TextBox Grid.Row="1" Text="{Binding UserId}" Height="40" 
+                         VerticalContentAlignment="Center" Padding="10"/>
+            </Grid>
+
+            <Grid Grid.Row="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="비밀번호" Foreground="#666" Margin="2,0,0,5"/>
+                <PasswordBox Grid.Row="1" Name="LoginPwBox"
+                             PasswordChanged="PasswordBox_PasswordChanged"
+                             Height="40" VerticalContentAlignment="Center" Padding="10"/>
+            </Grid>
+
+            <StackPanel Grid.Row="6">
+                <Button Content="로그인" Command="{Binding LoginCommand}"
+                        Height="45" Background="#007ACC" Foreground="White" 
+                        FontSize="16" FontWeight="Bold" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+
+                <Button Margin="0,15,0,0" HorizontalAlignment="Center" Command="{Binding OpenSignupCommand}"
+                        Background="Transparent" BorderThickness="0" Cursor="Hand">
+                    <TextBlock Text="계정이 없으신가요? 회원가입" 
+                               TextDecorations="Underline" Foreground="#888"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
