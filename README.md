@@ -42,3 +42,26 @@
 	- 저장 정보 : 보낸 사람, 메시지 내용, 전송 시간 (정확한 DateTime 값)가 기본이며, 필요한 값들에 대하여 추가 저장할 수 있다.
 - 비동기 DB 작업 (UX 개선):
 	- DB 연결 및 쿼리 실행 시 UI 스레드가 멈추지 않도록 비동기(async/await) 방식을 적용해야 한다.
+
+
+### 화면
+- 로그인
+<img width="346" height="419" alt="image" src="https://github.com/user-attachments/assets/e115ead1-1f7f-4ac8-b7ae-90259d08a2c8" />
+
+- 회원가입
+<img width="346" height="443" alt="image" src="https://github.com/user-attachments/assets/6e232d4c-909d-4340-8b6c-9048d561d390" />
+
+- 로그인 시 메인 화면
+<img width="786" height="443" alt="image" src="https://github.com/user-attachments/assets/19a59f23-a14f-41ba-b900-b730ee642166" />
+
+- 연결 후
+<img width="786" height="443" alt="image" src="https://github.com/user-attachments/assets/2c5ca7b1-95d9-4e02-a800-bd56ae92a859" />
+<img width="786" height="443" alt="image" src="https://github.com/user-attachments/assets/c94cd8de-99e8-4578-8f47-d615bb20f9e3" />
+
+- 상대방 연결 종료 시
+<img width="786" height="443" alt="image" src="https://github.com/user-attachments/assets/0d4e17b8-6095-4dd1-a4bd-a89f390ba42f" />
+
+
+
+
+
