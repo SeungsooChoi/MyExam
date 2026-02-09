@@ -82,8 +82,8 @@
 <img width="786" height="443" alt="image" src="https://github.com/user-attachments/assets/19a59f23-a14f-41ba-b900-b730ee642166" />
 
 - 연결 후
-<img width="786" height="443" alt="image" src="https://github.com/user-attachments/assets/2c5ca7b1-95d9-4e02-a800-bd56ae92a859" />
-<img width="786" height="443" alt="image" src="https://github.com/user-attachments/assets/c94cd8de-99e8-4578-8f47-d615bb20f9e3" />
+<img width="786" height="541" alt="image" src="https://github.com/user-attachments/assets/7bd89c9f-5455-4917-914f-e392dd26c1c5" />
+<img width="786" height="421" alt="image" src="https://github.com/user-attachments/assets/eb8365ab-3186-404e-ba72-04bd3d4dd7ea" />
 
 - 상대방 연결 종료 시
 <img width="786" height="443" alt="image" src="https://github.com/user-attachments/assets/0d4e17b8-6095-4dd1-a4bd-a89f390ba42f" />
