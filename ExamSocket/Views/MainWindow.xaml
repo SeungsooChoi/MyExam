@@ -27,11 +27,12 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
                 <!-- 통신 프로토콜 선택 -->
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="프로토콜:" VerticalAlignment="Center" Margin="5"/>
-                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <RadioButton Content="TCP" IsChecked="{Binding IsTcpProtocol}" GroupName="Protocol"/>
                     <RadioButton Content="UDP" IsChecked="{Binding IsUdpProtocol}" GroupName="Protocol"/>
                 </StackPanel>
@@ -47,11 +48,19 @@
                 <TextBlock Grid.Row="2" Grid.Column="2" Text="포트:" VerticalAlignment="Center" Margin="5"/>
                 <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding RemotePort, UpdateSourceTrigger=PropertyChanged}"/>
 
+                
+                
                 <!-- 연결 버튼 -->
-                <Button Grid.Row="0" Grid.RowSpan="3" Grid.Column="4" 
+                <Button Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" 
                         Content="{Binding ConnectionButtonText}"
                         Command="{Binding ToggleConnectionCommand}"
                         Width="100" Height="60"/>
+
+                <Button Grid.Row="1" Grid.RowSpan="2" Grid.Column="5"
+                        Content="UDP 유실 테스트" 
+                        Command="{Binding UdpTestCommand}" 
+                        IsEnabled="{Binding IsUdpProtocol}"
+                        Width="100" Height="60" />
             </Grid>
         </GroupBox>
 

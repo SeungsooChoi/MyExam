@@ -13,6 +13,8 @@ namespace ExamSocket.ViewModels
     {
         private ICommunicationService? _communicationService;
         private readonly MessageRepository _messageRepository;
+        private readonly HashSet<int> _receivedSequences = new HashSet<int>();
+        private const int ExpectedCount = 1000;
 
         private DispatcherTimer _idleTimer; // 연결이 성공(ConnectAsync / OnConnectionEstablished)하면 타이머를 시작
         private const int IdleTimeoutSeconds = 300; // 300초 (5분)
@@ -154,6 +156,44 @@ namespace ExamSocket.ViewModels
             });
         }
 
+        [RelayCommand]
+        private async Task UdpTest()
+        {
+            int messageCount = 1000;
+            int payloadSize = 500;
+            int remotePort = Convert.ToInt32(RemotePort);
+
+            // UI 스레드가 멈추지 않도록 Task.Run 사용
+            await Task.Run(async () =>
+            {
+                for (int i = 0; i < messageCount; i++)
+                {
+                    byte[] payload = new byte[payloadSize];
+
+                    // 데이터의 앞 4바이트에 시퀀스 번호(int) 삽입
+                    byte[] seqBytes = BitConverter.GetBytes(i);
+                    Buffer.BlockCopy(seqBytes, 0, payload, 0, seqBytes.Length);
+
+                    // 나머지 바이트는 기본값 0으로 채워짐
+
+                    // 바이트 배열을 Base64 문자열로 변환
+                    // 주의: Base64로 변환 시 실제 문자열의 길이는 원본 바이트 크기보다 약 33% 증가합니다.
+                    string base64Message = Convert.ToBase64String(payload);
+
+                    // 전송을 알리기 위해 특정 접두사 추가 (일반 채팅과 구분하기 위함)
+                    string finalMessage = $"TEST|{base64Message}";
+
+                    // UDP 소켓을 통해 데이터 전송
+                    await _communicationService.SendMessageAsync(finalMessage, RemoteIp, remotePort);
+
+                    // 주의: Task.Delay 없이 반복문을 돌리면 송신 버퍼가 가득 차거나 
+                    // 수신측 처리 속도를 초과하여 의도적인 대량 유실이 발생한다.
+                    // 아래 주석 해제하면서 테스트
+                    // await Task.Delay(1); 
+                }
+            });
+        }
+
         private async Task LoadChatHistoryAsync()
         {
             if(MyUserNo <= 0 || TargetUserNo <= 0) return; // id를 알아야함.
@@ -285,64 +325,115 @@ namespace ExamSocket.ViewModels
         /// </summary>
         private async void OnMessageReceived(string packet)
         {
-            Debug.WriteLine(packet);
-
-            long senderNo = 0;
-            string content = packet; // 기본값은 전체
-            bool isFirstContact = TargetUserNo == 0;
-
-            // 패킷 분해 (구분자 | 기준)
-            var parts = packet.Split('|', 2);
-
-            if (parts.Length == 2)
+            // 테스트 메시지인지 판별
+            if (packet.StartsWith("TEST|"))
             {
-                long.TryParse(parts[0], out senderNo);
-                content = parts[1];
+                // 접두사 "TEST|" 제거
+                string base64Data = packet.Substring(5);
+
+                try
+                {
+                    // Base64 문자열을 원본 바이트 배열로 복원
+                    byte[] receivedData = Convert.FromBase64String(base64Data);
+
+                    // 원본 크기(500바이트)가 맞는지 확인
+                    if (receivedData.Length == 500)
+                    {
+                        // 앞 4바이트를 읽어 시퀀스 번호 추출
+                        int seqNumber = BitConverter.ToInt32(receivedData, 0);
+                        _receivedSequences.Add(seqNumber);
+
+                        if (seqNumber == ExpectedCount - 1 || _receivedSequences.Count == ExpectedCount)
+                        {
+                            AnalyzeTestResult();
+                        }
+                    }
+                }
+                catch (FormatException)
+                {
+                    // Base64 변환 실패 처리 로직
+                    System.Diagnostics.Debug.WriteLine("Base64 변환 오류: 잘못된 데이터 수신");
+                }
             }
-
-            // 핸드쉐이크 패킷인지 확인
-            if(content == "[HANDSHAKE]")
+            else
             {
-                // 처음 식별된 상대방이거나, ID가 변경된 경우
+                Debug.WriteLine(packet);
+
+                long senderNo = 0;
+                string content = packet; // 기본값은 전체
+                bool isFirstContact = TargetUserNo == 0;
+
+                // 패킷 분해 (구분자 | 기준)
+                var parts = packet.Split('|', 2);
+
+                if (parts.Length == 2)
+                {
+                    long.TryParse(parts[0], out senderNo);
+                    content = parts[1];
+                }
+
+                // 핸드쉐이크 패킷인지 확인
+                if (content == "[HANDSHAKE]")
+                {
+                    // 처음 식별된 상대방이거나, ID가 변경된 경우
+                    if (TargetUserNo == 0 || TargetUserNo != senderNo)
+                    {
+                        TargetUserNo = senderNo;
+
+                        Debug.WriteLine($"상대방 식별됨: {TargetUserNo}");
+
+                        // 대화 내역 로드
+                        await LoadChatHistoryAsync();
+
+                        // 상대방에게 ID 핸드쉐이크
+                        string myHandshake = $"{MyUserNo}|[HANDSHAKE]";
+                        int remotePort = Convert.ToInt32(RemotePort);
+                        await _communicationService!.SendMessageAsync(myHandshake, RemoteIp, remotePort);
+                    }
+
+                    // 채팅 처리 안함
+                    return;
+                }
+
+                // ---------------------------- 일반 채팅 메시지 처리
+                // 혹시라도 일반 메시지가 먼저 왔을 경우를 대비해 ID 업데이트
                 if (TargetUserNo == 0 || TargetUserNo != senderNo)
                 {
                     TargetUserNo = senderNo;
-
-                    Debug.WriteLine($"상대방 식별됨: {TargetUserNo}");
-
-                    // 대화 내역 로드
-                    await LoadChatHistoryAsync();
-
-                    // 상대방에게 ID 핸드쉐이크
-                    string myHandshake = $"{MyUserNo}|[HANDSHAKE]";
-                    int remotePort = Convert.ToInt32(RemotePort);
-                    await _communicationService!.SendMessageAsync(myHandshake, RemoteIp, remotePort);
                 }
 
-                // 채팅 처리 안함
-                return;
+                ChatMessage chatMessage = new ChatMessage
+                {
+                    Content = content,
+                    Timestamp = DateTime.Now,
+                    IsSent = false,
+                    Status = MessageStatus.Received
+                };
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Messages.Add(chatMessage);
+                    ScrollRequested?.Invoke();
+                });
+            }
+        }
+
+        private void AnalyzeTestResult()
+        {
+            int receivedCount = _receivedSequences.Count;
+            int lostCount = ExpectedCount - receivedCount;
+
+            var allSequences = Enumerable.Range(0, ExpectedCount);
+            var lostSequences = allSequences.Except(_receivedSequences).ToList();
+
+            Debug.WriteLine($"[UDP 테스트 결과] 수신: {receivedCount}개, 유실: {lostCount}개");
+
+            if (lostCount > 0)
+            {
+                Debug.WriteLine($"유실된 패킷 번호: {string.Join(", ", lostSequences)}");
             }
 
-            // ---------------------------- 일반 채팅 메시지 처리
-            // 혹시라도 일반 메시지가 먼저 왔을 경우를 대비해 ID 업데이트
-            if (TargetUserNo == 0 || TargetUserNo != senderNo)
-            {
-                TargetUserNo = senderNo;
-            }
-
-            ChatMessage chatMessage = new ChatMessage
-            {
-                Content = content,
-                Timestamp = DateTime.Now,
-                IsSent = false,
-                Status = MessageStatus.Received
-            };
-
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                Messages.Add(chatMessage);
-                ScrollRequested?.Invoke();
-            });
+            _receivedSequences.Clear();
         }
 
         private void OnErrorOccurred(string error)
