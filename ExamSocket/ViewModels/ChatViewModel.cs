@@ -168,16 +168,14 @@ namespace ExamSocket.ViewModels
             {
                 for (int i = 0; i < messageCount; i++)
                 {
-                    byte[] payload = new byte[payloadSize];
+                    byte[] payload = new byte[payloadSize]; // 500 Byte
 
                     // 데이터의 앞 4바이트에 시퀀스 번호(int) 삽입
-                    byte[] seqBytes = BitConverter.GetBytes(i);
-                    Buffer.BlockCopy(seqBytes, 0, payload, 0, seqBytes.Length);
-
-                    // 나머지 바이트는 기본값 0으로 채워짐
+                    byte[] seqBytes = BitConverter.GetBytes(i); // 0 ~ 999 (유실 여부 판단)
+                    Array.Copy(seqBytes, 0, payload, 0, seqBytes.Length);
 
                     // 바이트 배열을 Base64 문자열로 변환
-                    // 주의: Base64로 변환 시 실제 문자열의 길이는 원본 바이트 크기보다 약 33% 증가합니다.
+                    // 주의: Base64로 변환 시 실제 문자열의 길이는 원본 바이트 크기보다 약 33% 증가한다.
                     string base64Message = Convert.ToBase64String(payload);
 
                     // 전송을 알리기 위해 특정 접두사 추가 (일반 채팅과 구분하기 위함)
